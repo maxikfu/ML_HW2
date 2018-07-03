@@ -1,9 +1,8 @@
 import keras
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
 from keras.datasets import cifar10
-
 
 # Generate dummy data
 import numpy as np
@@ -12,31 +11,34 @@ import numpy as np
 # x_test = np.random.random((100, 20))
 # y_test = keras.utils.to_categorical(np.random.randint(10, size=(100, 1)), num_classes=10)
 
+batch_size = 32
 num_classes = 10
+# The data, split between train and test sets:
 (x_train, y_train), (x_test, y_test) = cifar10.load_data()
-
 print('x_train shape:', x_train.shape)
 print(x_train.shape[0], 'train samples')
 print(x_test.shape[0], 'test samples')
-print(y_train[0])
 
 # Convert class vectors to binary class matrices.
 y_train = keras.utils.to_categorical(y_train, num_classes)
 y_test = keras.utils.to_categorical(y_test, num_classes)
-print(y_train[0])
-print(x_train.shape[1:])
+# flattening images (32, 32, 3) to 3072 vector
+num_pixels = x_train.shape[1] * x_train.shape[2]
+
+x_train = x_train.reshape(-1, 3072)
+x_test = x_test.reshape(-1, 3072)
+# normalize inputs from 0-255 to 0.0-1.0
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
+x_train = x_train / 255.0
+x_test = x_test / 255.0
 
 model = Sequential()
-# Dense(64) is a fully-connected layer with 64 hidden units.
-# in the first layer, you must specify the expected input data shape:
-# here, 20-dimensional vectors.
-model.add(Dense(64, activation='relu', input_shape=x_train.shape[1:]))
+model.add(Dense(num_pixels, activation='relu', input_dim=3072))
 model.add(Dropout(0.5))
-model.add(Dense(64, activation='relu'))
+model.add(Dense(num_pixels, activation='relu'))
 model.add(Dropout(0.5))
-
-model.add(Flatten())
-model.add(Dense(10, activation='softmax'))
+model.add(Dense(num_classes, activation='softmax'))
 
 sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
 model.compile(loss='categorical_crossentropy',
@@ -45,7 +47,7 @@ model.compile(loss='categorical_crossentropy',
 
 model.fit(x_train, y_train,
           epochs=20,
-          batch_size=128)
-score, acc = model.evaluate(x_test, y_test, batch_size=128)
+          batch_size=batch_size)
+score, acc = model.evaluate(x_test, y_test, batch_size=batch_size)
 print('Test score = ',score)
-print('Test accuracy = ',acc)
+print('Test accuracy = ', acc)

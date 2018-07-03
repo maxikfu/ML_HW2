@@ -8,7 +8,7 @@ from keras.preprocessing import sequence
 
 max_features = 20000
 maxlen = 80  # cut texts after this number of words (among top max_features most common words)
-batch_size = 32
+batch_size = 16
 
 print('Loading data...')
 (x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=max_features)
@@ -34,5 +34,5 @@ model.compile(loss='binary_crossentropy',
 
 model.fit(x_train, y_train, batch_size=batch_size, epochs=10)
 score, acc = model.evaluate(x_test, y_test, batch_size=batch_size)
-print('Test score = ', score)
+print('Test loss = ', score)
 print('Test accuracy = ', acc)
